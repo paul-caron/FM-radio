@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FM radio - Frequency Modulation</title>
+    </head>
+    <body>
+        <h1>Frequency Modulation</h1>
+        <figure>
+        <canvas></canvas>
+        <figcaption>First: Input signal.<br>Second: Carrier frequency.<br>Third: FM signal.<br>Fourth: High Pass Filtered.<br>Fifth: Rectified<br>Sixth: Final decoded signal.</figcaption>
+        </figure>
+        <p>Frequency modulation is the successor to amplitude modulation.</p>
+        <p>Its main advantage is that it is less vunerable to amplitude changes in the signal, which is something that happens naturally for many different reasons (eg. nearby lightning storm affecting the radio signal).</p>
+        <p>Have you noticed how constant the amplitude of the FM signal is?(see figure above).</p>
+        <p>A sine wave can be mathematically described as <i>Amplitude*sin(2*PI*frequency*time+phase).</i></p>
+        <p>We replace frequency by <i>carrierFrequency+B*signal(time), where B is the modulation ratio. </i>This results in a variating frequency that has a value between <i>carrierFrequency +/- B*signal(time).</i></p>
+        <p>&copy ChillPill 2020, aka Paul Caron</p>
+        <script>
+            
+           const {abs,sin,PI}=Math
+let canvas, w, h, ctx
+const signalFrequency=0.01
+const carrierFrequency=0.05
+const timeDivider=100
+
+function init(){
+    canvas=document.querySelector("canvas")
+    canvas.width=w=360
+    canvas.height=h=360
+    ctx=canvas.getContext("2d")
+    ctx.fillStyle="black"
+    ctx.fillRect(0,0,w,h)
+}
+
+function signal(time){
+    return sin(2*PI*signalFrequency*time)
+}
+
+function carrier(time){
+    return sin(2*PI*carrierFrequency*time)
+}
+
+
+let phaseShift=0
+function fm(time,dt){
+    //Vmo max amplitude of input signal
+    const vmo=1
+    //delta frequency
+    const df=(carrierFrequency-signalFrequency)
+    const f=(carrierFrequency+(signal(time))*(df/vmo))
+    //phase integral
+    phaseShift+=f
+    return sin(2*PI*(f)*dt+2*PI*phaseShift)
+}
+
+let il=0
+const L=1000
+const R=1000
+function highpass(vin,dt){
+    const vl=vin-R*il
+    const di=dt*vl/L
+    il+=di
+    return vl
+}
+
+let vc=0
+const C=0.015
+const Rc=0.015
+function lowpass(vin,dt){
+    const Ic=(vin-vc)/R
+    dv=dt*Ic/C
+    vc+=dv
+    return vc
+}
+
+let prevTime =-0.1
+function run(time){
+    const t=time/timeDivider
+    const dt=(time-prevTime)/timeDivider
+    prevTime = time
+    ctx.fillStyle="black"
+    ctx.fillRect((t+1)%w,0,3,h)
+    ctx.fillStyle="white"
+    const input=signal(t)
+    ctx.fillRect(t%w,input*h/11+h/11,1,1)
+    const car=carrier(t)
+    ctx.fillRect(t%w,car*h/11+3*h/11,1,1)
+    const modulated=fm(t,dt)
+    ctx.fillRect(t%w,modulated*h/11+5*h/11,1,1)
+    const filtered=highpass(modulated,dt)
+    ctx.fillRect(t%w,filtered*h/11+7*h/11,1,1)
+    const rectified=filtered>0?filtered:0
+    ctx.fillRect(t%w,rectified*h/11+8*h/11,1,1)
+    const end=lowpass(rectified,dt)
+    ctx.fillRect(t%w,end*h+7*h/11,1,1)
+    
+    requestAnimationFrame(run)
+}
+
+onload=()=>{
+    init()
+    requestAnimationFrame(run)
+}
+
+
+
+
+            
+            
+            
+        </script>
+    </body>
+</html>
