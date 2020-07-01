@@ -17,7 +17,7 @@
         <p>&copy ChillPill 2020, aka Paul Caron</p>
         <script>
             
-           const {abs,sin,PI}=Math
+const {abs,sin,PI}=Math
 let canvas, w, h, ctx
 const signalFrequency=0.01
 const carrierFrequency=0.05
@@ -49,7 +49,7 @@ function fm(time,dt){
     const df=(carrierFrequency-signalFrequency)
     const f=(carrierFrequency+(signal(time))*(df/vmo))
     //phase integral
-    phaseShift+=f
+    phaseShift+=f*2*PI*dt
     return sin(2*PI*(f)*dt+phaseShift)
 }
 
