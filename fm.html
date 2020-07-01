@@ -50,7 +50,7 @@ function fm(time,dt){
     const f=(carrierFrequency+(signal(time))*(df/vmo))
     //phase integral
     phaseShift+=f
-    return sin(2*PI*(f)*dt+2*PI*phaseShift)
+    return sin(2*PI*(f)*dt+phaseShift)
 }
 
 let il=0
@@ -64,10 +64,10 @@ function highpass(vin,dt){
 }
 
 let vc=0
-const C=0.015
-const Rc=0.015
+const C=0.1
+const Rc=100
 function lowpass(vin,dt){
-    const Ic=(vin-vc)/R
+    const Ic=(vin-vc)/Rc
     dv=dt*Ic/C
     vc+=dv
     return vc
